@@ -67,23 +67,55 @@ char genRandom()  // Random string generator function.
 
 int main()
 {
+
     cout << "Ingrese la cantidad de test seguido del largo de strings a probar" << endl;
     int n, t;
     cin >> n >> t;
     while(n--){
-        string source, target;
+        string source, target; //inicializacion de strings aleatorios
         for(unsigned int i = 0; i < t; i++){
             source += genRandom();
             target += genRandom();
         }
+        //Test Distancia de edicion dinamico
+        auto inicio = chrono::steady_clock::now();
         cout <<"Dynamic Edit dist: "+ source + " " + target + " es :" << EditDistDynamic(source, target) << endl;
-        cout <<"Cache Edit dist: "+ source + " " + target + " es :" << EditDistCache(source, target) << endl;
+        auto fin = chrono::steady_clock::now();
+        double duracion = chrono::duration_cast<chrono::microseconds>(fin-inicio).count();
+        cout <<"Me demore con el algoritmo dinamico: " << duracion << " microsegundos" << endl;
 
+        //Test Distancia de edicion Cache
+        auto inicio2 = chrono::steady_clock::now();
+        cout <<"Cache Edit dist: "+ source + " " + target + " es :" << EditDistCache(source, target) << endl;
+        auto fin2 = chrono::steady_clock::now();
+        double duracion2 = chrono::duration_cast<chrono::microseconds>(fin2-inicio2).count();
+        cout <<"Me demore con el algoritmo Cache: " << duracion2 << " microsegundos" << endl;
+
+        //Test Distancia de edicion Particionado
+        /*
+        auto inicio3 = chrono::steady_clock::now();
+        // cout <<"Cache Edit dist: "+ source + " " + target + " es :" << EditDistPartition(source, target) << endl;
+        auto fin3 = chrono::steady_clock::now();
+        double duracion3 = chrono::duration_cast<chrono::microseconds>(fin3-inicio3).count();
+        cout <<"Me demore con el algoritmo Cache: " << duracion3 << " microsegundos" << endl;
+        */
+       cout << endl;       
     }
 
+    //Ejemplos individuales
+
+    auto inicio = chrono::steady_clock::now();
+    cout <<"Dynamic Edit dist entre banana y ananas es:" << EditDistDynamic("banana", "ananas") << endl;
+    auto fin = chrono::steady_clock::now();
+    double duracion = chrono::duration_cast<chrono::microseconds>(fin-inicio).count();
+    cout <<"Me demore con el algoritmo dinamico: " << duracion << " microsegundos" << endl;
+
+    auto inicio2 = chrono::steady_clock::now();
+    cout <<"Cache Edit dist entre banana y ananas es:" << EditDistDynamic("banana", "ananas") << endl;
+    auto fin2 = chrono::steady_clock::now();
+    double duracion2 = chrono::duration_cast<chrono::microseconds>(fin2-inicio2).count();
+    cout <<"Me demore con el algoritmo Cache: " << duracion2 << " microsegundos" << endl;
+    
 
 
-    cout << EditDistDynamic("banana", "ananas") << endl;
-    cout << EditDistCache("banana", "ananas") << endl;
-    cout << "Adios" << endl;
 }
