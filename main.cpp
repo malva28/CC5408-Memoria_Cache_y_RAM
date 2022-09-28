@@ -363,7 +363,7 @@ int main()
     double stdevCache2{ stdev(resultadosCache2, testCompletos) };
     double stdevBloque{ stdev(resultadosBloque, testCompletos) };
 
-    cout <<"\nRESULTADOS FINALES" << '\n\n' << "Número de tests exitosos: " << testCompletos 
+    cout <<"\nRESULTADOS FINALES" << "\n\n" << "Número de tests exitosos: " << testCompletos 
         << "\nTiempo[ms] para Algoritmo Dinámico -\tprom: " << promDinamico << " ;\tdevst: " << stdevDinamico
         << "\nTiempo[ms] para Algoritmo Caché -\tprom: " << promCache << " ;\tdevst: " << stdevCache
         << "\nTiempo[ms] para Algoritmo Caché2 -\tprom: " << promCache2 << " ;\tdevst: " << stdevCache2
