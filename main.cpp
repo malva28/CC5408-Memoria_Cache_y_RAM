@@ -7,7 +7,9 @@ int EditDistDynamic(string a, string b) // Algoritmo-1 Distancia de Edicion Prog
 {
     int filas = a.length();
     int columnas = b.length();
-    int res[filas + 1][columnas + 1] = {{0}}; // grilla de n+1, m+1
+    //int res[filas + 1][columnas + 1] = {{0}}; // grilla de n+1, m+1
+    // Aquí creamos una matriz de tamaño n x m
+    vector< vector<int> > res( filas+1 , vector<int>(columnas+1) );
     for (int i = 0; i <= filas; i++)          // llenar filas
         res[i][0] = i;
     for (int j = 0; j <= columnas; j++) // llenar columnas
@@ -36,7 +38,8 @@ int EditDistCache(string a, string b)
 {
     int n = a.length();
     int m = b.length();
-    int res[2][m + 1]; // 2 filas
+    //int res[2][m + 1]; // 2 filas
+    vector< vector<int> > res( 2 , vector<int>(m+1) );
     for (int i = 0; i <= m; i++) {//relleno las filas      
         res[0][i] = i;
         res[1][i] = i;
