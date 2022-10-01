@@ -65,12 +65,26 @@ def plot_performances(str_lens: np.ndarray,
 
 if __name__ == "__main__":
     result_filename = "time_results.csv"
-    block_size = 32
-    log2 = False
-    plot_filename = "plot_results.png"
+
+    #block_size = 32
+    #log2 = False
+    #plot_filename = "plot_results.png"
+    print()
+
+    try:
+        block_size = int(input("Ingrese tamaño de bloque usado en las mediciones: "))
+    except ValueError:
+        block_size = 0
+    log2 = input("Usar escala logarítmica? (Y/N:default): ")
+    log2 = log2.lower() == "y"
+    plot_filename = input("Guardar imagen del plot? (Y:default/N): ")
+    plot_filename = "" if plot_filename.lower() == "n" else "plot_results.png"
 
     results = read_results(result_filename)
-    results = filter_by_block_len(results, block_size)
+
+    if block_size > 0:
+        results = filter_by_block_len(results, block_size)
+        
     results.sort(key= lambda row: int(row["len_string"]))
 
     string_sizes = extract_column(results, "len_string", int)
