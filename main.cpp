@@ -1,15 +1,36 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+//#define USE_STACK
+#define USE_VECTOR
+//#define USE_NEW
+
 // El algoritmo tambien funciona en strings de tamaño distintos
 //  O(n*m) ???
 int EditDistDynamic(string a, string b) // Algoritmo-1 Distancia de Edicion Programacion dinamica
 {
     int filas = a.length();
     int columnas = b.length();
-    //int res[filas + 1][columnas + 1] = {{0}}; // grilla de n+1, m+1
+
     // Aquí creamos una matriz de tamaño n x m
+    #ifdef USE_STACK
+    int res[filas + 1][columnas + 1] = {{0}}; // grilla de n+1, m+1
+    #endif
+
+    #ifdef USE_VECTOR
     vector< vector<int> > res( filas+1 , vector<int>(columnas+1) );
+    #endif 
+
+    #ifdef USE_NEW
+    // inicializar arreglo de filas en heap con new (versión cheta de malloc)
+    int** res { new int*[filas+1]{ } };
+    for (int i{ 0 }; i < filas+1; i++)
+    {
+        // cada fila también debe ser inicializada con new
+        res[i]  = new int[columnas+1]{ };
+    }
+    #endif
+    
     for (int i = 0; i <= filas; i++)          // llenar filas
         res[i][0] = i;
     for (int j = 0; j <= columnas; j++) // llenar columnas
@@ -29,7 +50,18 @@ int EditDistDynamic(string a, string b) // Algoritmo-1 Distancia de Edicion Prog
             }
         }
     }
-    return res[filas][columnas];
+    int finalResult{ res[filas][columnas] };
+
+    #ifdef USE_NEW
+    // delete allocated memory
+    for (int i{ 0 }; i < filas+1; i++)
+    {
+        delete res[i];
+    }
+    delete res;
+    #endif
+
+    return finalResult;
 }
 
 //no funciona en strigns de largos distinto:c TODO: revisar pq'
@@ -38,8 +70,24 @@ int EditDistCache(string a, string b)
 {
     int n = a.length();
     int m = b.length();
-    //int res[2][m + 1]; // 2 filas
+
+    #ifdef USE_STACK
+    int res[2][m + 1]; // 2 filas
+    #endif
+
+    #ifdef USE_VECTOR
     vector< vector<int> > res( 2 , vector<int>(m+1) );
+    #endif
+
+    #ifdef USE_NEW
+    int** res { new int*[2]{ } };
+    for (int i{ 0 }; i < 2; i++)
+    {
+        // cada fila también debe ser inicializada con new
+        res[i]  = new int[m+1]{ };
+    }
+    #endif
+
     for (int i = 0; i <= m; i++) {//relleno las filas      
         res[0][i] = i;
         res[1][i] = i;
@@ -58,7 +106,17 @@ int EditDistCache(string a, string b)
             
         }
     }
-    return res[n%2][m];
+    int finalResult{ res[n%2][m] };
+
+    #ifdef USE_NEW
+    for (int i{ 0 }; i < 2; i++)
+    {
+        delete res[i];
+    }
+    delete res;
+    #endif
+
+    return finalResult;
     
 }
 
@@ -81,11 +139,22 @@ int EditDistCache2(string a, string b)
 {
     int n = a.length();
     int m = b.length();
+    
+    #ifdef USE_STACK
     int temp[m]; // 1 fila de largo m (no se considera la columna 0 porque se puede inferir de i)
+    #endif
+
+    #ifdef USE_VECTOR
+    vector<int> temp(m, 0);
+    #endif
+
+    #ifdef USE_NEW
+    int* temp{ new int[m]{ } };
 
     for (int j = 1; j <= m; j++) {//relleno las filas      
         temp[j-1] = j;
     }
+    #endif
 
     int left{ }; // (i,j-1)
     int up{ };   // (i-1,j)
@@ -99,7 +168,14 @@ int EditDistCache2(string a, string b)
         diag = i-1;
 
         for (int j = 1; j < m; j++){
-            curr = getCellVal(a[i-1], b[j-1], left, up, diag);
+            if(a[i-1] == b[j-1])
+            {
+                curr = diag;
+            }
+            else
+            {
+                curr =  1 + min(left, min(up, diag));
+            }
             // if the current value is equal to the value on top (stored in temp[j]), there's
             // no need to alter temp. Otherwise, we must overwrite the corresponding cell
             if(curr != up) 
@@ -110,12 +186,25 @@ int EditDistCache2(string a, string b)
             diag = up;
             up = temp[j];
         }
-        curr = getCellVal(a[i-1], b[m-1], left, up, diag);
+        // one last comparison 
+        if(a[i-1] == b[m-1])
+        {
+            curr = diag;
+        }
+        else
+        {
+            curr =  1 + min(left, min(up, diag));
+        }
         if(curr != up) 
         {
             temp[m-1] = curr;
         }
     }
+
+    #ifdef USE_NEW
+    delete[] temp;
+    #endif
+
     return curr;
     
 }
@@ -137,7 +226,18 @@ int EditDistBlock(string a, string b, int blockSize)
 
     // fronteraH almacenará los valores de las fronteras horizontales(sin solapar) de las
     // subtablas procesadas de izquierda a derecha. Hará de memoria secundaria, supongo
+    
+    #ifdef USE_STACK
     int fronteraH[blockSize*mM];
+    #endif
+
+    #ifdef USE_VECTOR
+    vector<int> fronteraH(blockSize*mM, 0);
+    #endif
+
+    #ifdef USE_NEW
+    int* fronteraH{ new int[blockSize*mM]{ } };
+    #endif
 
     // tabla con largo x ancho = a un bloque de cache (?)
     int tabla[blockSize][blockSize];
@@ -207,12 +307,17 @@ int EditDistBlock(string a, string b, int blockSize)
         }
 
     }
+
+    #ifdef USE_NEW
+    delete[] fronteraH;
+    #endif
+
     return tabla[filas-1][columnas-1];
 
 }
 
 // promedio
-double mean(vector<int> nums, size_t size)
+double mean(vector<int>& nums, size_t size)
 {
     double sum{ };
     for(int i{ }; i < size; i++)
@@ -224,7 +329,7 @@ double mean(vector<int> nums, size_t size)
 }
 
 // desviación estándar
-double stdev(vector<int> nums, size_t size)
+double stdev(vector<int>& nums, size_t size)
 {
     double mu{ mean(nums, size) };
     double sigma{ };
@@ -324,6 +429,8 @@ int main()
             auto fin3 = chrono::steady_clock::now();
             double duracion3 = chrono::duration_cast<chrono::microseconds>(fin3-inicio3).count();
             cout <<"Me demore con el algoritmo Particionado: " << duracion3 << " microsegundos" << endl;
+
+            cout << "Quedan " << n << " tests!\n";
             
             cout << endl;   
             
