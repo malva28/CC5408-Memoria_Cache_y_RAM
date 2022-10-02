@@ -91,7 +91,7 @@ if __name__ == "__main__":
     algorithm_label_dict = {
         "t_dinamico[μs]": "Algoritmo Sin Optimizar",
         "t_cache[μs]": "Algoritmo Cache",
-        "t_cache2[μs]": "Algortimo Cache 2",
+        #"t_cache2[μs]": "Algortimo Cache 2",
         "t_particion[μs]": "Algoritmo Submatrices"
     }
     algorithm_labels = [algorithm_label_dict[key] for key in algorithm_label_dict]

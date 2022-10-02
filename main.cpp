@@ -5,6 +5,8 @@ using namespace std;
 #define USE_VECTOR
 //#define USE_NEW
 
+//#define COMPUTE_CACHE2
+
 // El algoritmo tambien funciona en strings de tamaño distintos
 //  O(n*m) ???
 int EditDistDynamic(string a, string b) // Algoritmo-1 Distancia de Edicion Programacion dinamica
@@ -120,6 +122,7 @@ int EditDistCache(string a, string b)
     
 }
 
+/*
 // based in the current chars at a[i], b[j] to be compared
 int getCellVal(char a, char b, int left, int up, int diag)
 {
@@ -132,7 +135,9 @@ int getCellVal(char a, char b, int left, int up, int diag)
         return 1 + min(left, min(up, diag));
     }
 }
+*/
 
+#ifdef COMPUTE_CACHE2
 // no c
 //O(2*m)?? la verdad ni siquiera lo pense pero se ve como algo por el estilo
 int EditDistCache2(string a, string b)
@@ -208,6 +213,7 @@ int EditDistCache2(string a, string b)
     return curr;
     
 }
+#endif
 
 
 int EditDistBlock(string a, string b, int blockSize)
@@ -373,9 +379,17 @@ int main()
     // crear vector de resultados
     vector<int> resultadosDinamico{ };
     vector<int> resultadosCache{ };
-    vector<int> resultadosCache2{ };
     vector<int> resultadosBloque{ };
     int testCompletos{ };
+
+    #ifdef COMPUTE_CACHE2
+    vector<int> resultadosCache2{ };
+    string header{ "len_string,len_bloque,n_tests,t_dinamico[μs],t_cache[μs],t_cache2[μs],t_particion[μs]" };
+    #endif
+
+    #ifndef COMPUTE_CACHE2
+    string header{ "len_string,len_bloque,n_tests,t_dinamico[μs],t_cache[μs],t_particion[μs]" };
+    #endif
 
     // guardar resultados en un txt
     string filename{ "time_results.csv" };
@@ -384,17 +398,39 @@ int main()
     ifstream f(filename.c_str());
     bool existe{f.good()};
 
+    if(!existe)
+    {
+        std::ofstream outfile;
+        outfile.open (filename);
+        // colocar header si no existe
+        outfile << header << '\n';
+        outfile.close();
+    }
+    else
+    {
+        string firstLine;
+        getline(f, firstLine);
+        // fix outdated headers
+        if(firstLine != header)
+        {
+            std::ofstream outfile;
+            outfile.open (filename);
+            outfile << header << '\n';
+            outfile << f.rdbuf();
+            outfile.close();
+        }
+
+    }
+
+    f.close();
+
     std::ofstream outfile;
     // modo append
     outfile.open (filename, std::ios::app);
-    if(!existe)
-    {
-        // colocar header si no existe
-        outfile << "len_string,len_bloque,n_tests,t_dinamico[μs],t_cache[μs],t_cache2[μs],t_particion[μs]\n";
-    }
 
     try
     {
+        
         while(n--){
             string source, target; //inicializacion de strings aleatorios
             for(unsigned int i = 0; i < t; i++){
@@ -415,17 +451,19 @@ int main()
             double duracion2 = chrono::duration_cast<chrono::microseconds>(fin2-inicio2).count();
             cout <<"Me demore con el algoritmo Cache: " << duracion2 << " microsegundos" << endl;
 
+            #ifdef COMPUTE_CACHE2
             //Test Distancia de edicion Cache2
             auto inicio2a = chrono::steady_clock::now();
             cout <<"Cache Edit dist: "+ source + " " + target + " es :" << EditDistCache2(source, target) << endl;
             auto fin2a = chrono::steady_clock::now();
             double duracion2a = chrono::duration_cast<chrono::microseconds>(fin2a-inicio2a).count();
             cout <<"Me demore con el algoritmo Cache 2: " << duracion2a << " microsegundos" << endl;
+            #endif
 
             //Test Distancia de edicion Particionado
             
             auto inicio3 = chrono::steady_clock::now();
-            cout <<"Cache Edit dist: "+ source + " " + target + " es :" << EditDistBlock(source, target, b) << endl;
+            cout <<"Block Edit dist: "+ source + " " + target + " es :" << EditDistBlock(source, target, b) << endl;
             auto fin3 = chrono::steady_clock::now();
             double duracion3 = chrono::duration_cast<chrono::microseconds>(fin3-inicio3).count();
             cout <<"Me demore con el algoritmo Particionado: " << duracion3 << " microsegundos" << endl;
@@ -436,8 +474,11 @@ int main()
             
             resultadosDinamico.push_back(duracion);
             resultadosCache.push_back(duracion2);
-            resultadosCache2.push_back(duracion2a);
             resultadosBloque.push_back(duracion3);
+
+            #ifdef COMPUTE_CACHE2
+            resultadosCache2.push_back(duracion2a);
+            #endif
 
             testCompletos++;    
 
@@ -463,24 +504,36 @@ int main()
     // calcular promedios
     double promDinamico{ mean(resultadosDinamico, testCompletos) };
     double promCache{ mean(resultadosCache, testCompletos) };
-    double promCache2{ mean(resultadosCache2, testCompletos) };
     double promBloque{ mean(resultadosBloque, testCompletos) };
 
     // calcular desviaciones estándar
 
     double stdevDinamico{ stdev(resultadosDinamico, testCompletos) };
-    double stdevCache{ stdev(resultadosCache, testCompletos) };
-    double stdevCache2{ stdev(resultadosCache2, testCompletos) };
+    double stdevCache{ stdev(resultadosCache, testCompletos) }; 
     double stdevBloque{ stdev(resultadosBloque, testCompletos) };
+
+    #ifdef COMPUTE_CACHE2
+    double promCache2{ mean(resultadosCache2, testCompletos) };
+    double stdevCache2{ stdev(resultadosCache2, testCompletos) };
+    #endif
 
     cout <<"\nRESULTADOS FINALES" << "\n\n" << "Número de tests exitosos: " << testCompletos 
         << "\nTiempo[ms] para Algoritmo Dinámico -\tprom: " << promDinamico << " ;\tdevst: " << stdevDinamico
         << "\nTiempo[ms] para Algoritmo Caché -\tprom: " << promCache << " ;\tdevst: " << stdevCache
+        #ifdef COMPUTE_CACHE2
         << "\nTiempo[ms] para Algoritmo Caché2 -\tprom: " << promCache2 << " ;\tdevst: " << stdevCache2
+        #endif
         << "\nTiempo[ms] para Algoritmo Partición -\tprom: " << promBloque << " ;\tdevst: " << stdevBloque << '\n';
     
     // fila del csv con los tiempos
-    outfile << t << ',' << b << ',' << testCompletos << ',' << promDinamico<< ',' << promCache << ',' << promCache2 << ',' << promBloque << '\n';
+    outfile << t << ',' << b 
+            << ',' << testCompletos 
+            << ',' << promDinamico 
+            << ',' << promCache 
+            #ifdef COMPUTE_CACHE2
+            << ',' << promCache2 
+            #endif
+            << ',' << promBloque << '\n';
     // cerrar archivo de tests
     outfile.close();
 
